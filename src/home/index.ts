@@ -14,7 +14,9 @@ let totPages: number = 1;
 
 window.Webflow ||= [];
 window.Webflow.push(async () => {
-  const item_stat = await fetchNewsStatDatabase(`http://localhost:5000/stat?per_page=${perPage}`);
+  const item_stat = await fetchNewsStatDatabase(
+    `http://metro-info.edwardxwliu.cn:5000/stat?per_page=${perPage}`
+  );
   totPages = item_stat.tot_pages;
   loadItems(currentPage);
 
@@ -109,7 +111,7 @@ const loadItems = async (page: number) => {
 
   if (page < 1 || page > totPages) return;
   const newsData = await fetchNewsDatabase(
-    `http://localhost:5000/search?page=${page}&per_page=${perPage}`
+    `http://metro-info.edwardxwliu.cn:5000/search?page=${page}&per_page=${perPage}`
   );
   if (!newsData) {
     window.location.replace('/');
