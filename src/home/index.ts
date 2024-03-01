@@ -2,89 +2,96 @@ import './index.css';
 
 import { cloneNode } from '@finsweet/ts-utils';
 
-import { fetchNewsDatabase, fetchNewsStatDatabase } from '$utils/api';
-import type { NewsData } from '$utils/types';
+import { fetchData, getCurrentDate } from '$utils/api';
+import type { NewsData, NewsDataStat } from '$utils/types';
 
-let currentPage: number = 1;
-const perPage = 10;
-let oldItems: HTMLDivElement[] = [];
-// const itemTemplate = document.querySelector<HTMLDivElement>('[data-element="news-item"]');
-let totPages: number = 1;
-// let pre_page:number = 0;
+let oldPageIndex: number = 1; // 导航栏历史index
+let curPageIndex: number = 1; // 导航栏当前index
+const perPage: number = 10; // 每页显示item数量，默认10
+const currentDate: string = getCurrentDate();
 
-window.Webflow ||= [];
-window.Webflow.push(async () => {
-  const item_stat = await fetchNewsStatDatabase(
-    `http://metro-info.edwardxwliu.cn:5000/stat?per_page=${perPage}`
-  );
-  totPages = item_stat.tot_pages;
-  loadItems(currentPage);
-
-  // create before and next button and add events
-  const nextButton = document.querySelector<HTMLButtonElement>('[data-element="next-page"]');
-  const previousButton = document.querySelector<HTMLButtonElement>(
-    '[data-element="previous-page"]'
-  );
-
-  if (nextButton) {
-    nextButton.addEventListener('click', () => {
-      loadItems(currentPage + 1);
-    });
+class GlobalState {
+  private variables: { [key: string]: number | HTMLDivElement[] } = {};
+  constructor(initVals: { [key: string]: number | HTMLDivElement[] }) {
+    this.variables = initVals;
   }
-  if (previousButton) {
-    previousButton.addEventListener('click', () => {
-      loadItems(currentPage - 1);
-    });
+  setValue(key: string, val: number | HTMLDivElement[]) {
+    if (key in this.variables) {
+      this.variables[key] = val;
+    } else {
+      console.log(`No such variable '${key}' found`);
+    }
   }
+  getValue<T>(key: string): T {
+    return this.variables[key] as T;
+  }
+}
 
-  // create page index buttons
-  loadPageIndex(1, 10);
-
-  // handleNavButtons(currentPage);
+const globalState = new GlobalState({
+  fgwTotItems: 0,
+  wechatTotItems: 0,
+  fgwOldItemsHistory: [], // 历史item数组
+  fgwOldItemsToday: [],
+  wechatOldItemsHistory: [],
+  wechatOldItemsToday: [],
 });
 
-const createPageIndex = (index: number, itemTemplate: HTMLButtonElement) => {
-  const item = cloneNode(itemTemplate);
+window.Webflow ||= [];
+window.Webflow.push(() => {
+  handleNews('fgw', 'fgwTotItems', 'fgwOldItemsToday', 'fgwOldItemsHistory');
+  handleNews('wechat', 'wechatTotItems', 'wechatOldItemsToday', 'wechatOldItemsHistory');
+});
 
-  if (item) {
-    item.textContent = index.toString();
-    item.setAttribute('page-nav-index', index.toString());
-  }
-  item.addEventListener('click', () => {
-    if (!item.disabled) {
-      loadItems(index);
-    }
-  });
-  return item;
-};
-
-const loadPageIndex = async (stPage: number, edPage: number) => {
-  // find the index template
-  const pageIndexTemplate = document.querySelector<HTMLButtonElement>(
-    '[data-element="page-index"]'
+async function handleNews(key: string, glTotItems: string, glbToday: string, glbHistory: string) {
+  // 获取数据总数量和总分页数，分页通过perPage计算。
+  const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
+    `http://localhost:5000/stat?key=${key}&per_page=${perPage}`
   );
-  if (!pageIndexTemplate) return;
-  // find page index wrapper
-  const pageIndexList = pageIndexTemplate.parentElement!;
-  pageIndexTemplate.remove();
+  globalState.setValue(glTotItems, item_stat[0].tot_items);
+  loadItems(key, oldPageIndex, glbToday, glbHistory); // 加载item数组
+  setInterval(() => updateNews(key, glTotItems, glbToday, glbHistory), 5000); // 页面更新判断每5秒一次
+}
 
-  for (let i = stPage; i <= edPage; i++) {
-    pageIndexList.append(createPageIndex(i, pageIndexTemplate));
+/**
+ * 通过判断item总数的变化来决定是否更新页面
+ */
+async function updateNews(key: string, glTotItems: string, glbToday: string, glbHistory: string) {
+  if (curPageIndex === 1) {
+    // 当用户在第1页时才触发更新，否则不触发
+    const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
+      `http://localhost:5000/stat?key=${key}&per_page=${perPage}`
+    );
+    const newTotItems = item_stat[0].tot_items;
+    const oldTotItems = globalState.getValue(glTotItems);
+    if (newTotItems !== oldTotItems) {
+      // oldTotItems = newTotItems;
+      globalState.setValue(glTotItems, newTotItems);
+      loadItems(key, oldPageIndex, glbToday, glbHistory); // 加载item数组
+    }
   }
-};
+}
 
+/**
+ * 创建消息item
+ * @param param0 一个{@link newsData}对象
+ * @param itemTemplate webflow模板
+ * @returns 一个{@link HTMLDivElement}对象
+ */
 const createNewsItem = (
-  { type, title, url, preview, p_date, org }: NewsData,
+  key: string,
+  { type, title, pic_url, url, p_date }: NewsData,
   itemTemplate: HTMLDivElement
 ) => {
   const item = cloneNode(itemTemplate);
-  const typeElement = item.querySelector<HTMLDivElement>('[data-element="news-type"]');
-  const titleElement = item.querySelector<HTMLLinkElement>('[data-element="news-title"]');
-  const previewElement = item.querySelector<HTMLDivElement>('[data-element="news-preview');
-  const orgElement = item.querySelector<HTMLDivElement>('[data-element="news-org"]');
-  const dateElement = item.querySelector<HTMLDivElement>('[data-element="news-date"]');
-
-  // console.log(item, typeElement, titleElement);
+  // console.log(itemTemplate, pic_url);
+  const typeElement = item.querySelector<HTMLDivElement>(`[data-element="${key}-type"]`);
+  const titleElement = item.querySelector<HTMLLinkElement>(`[data-element="${key}-title"]`);
+  // const previewElement = item.querySelector<HTMLDivElement>('[data-element="news-preview');
+  // const orgElement = item.querySelector<HTMLDivElement>('[data-element="news-org"]');
+  const dateElement = item.querySelector<HTMLDivElement>(`[data-element="${key}-date"]`);
+  // const imgElement = item.querySelector<HTMLDivElement>(`[data-element="${key}-img-preview"]`);
+  const imgElement = item.querySelector<HTMLImageElement>(`[data-element="${key}-img-preview"]`);
+  // 赋值
   if (typeElement) {
     typeElement.textContent = type;
   }
@@ -92,105 +99,106 @@ const createNewsItem = (
     titleElement.textContent = title;
     titleElement.href = url;
   }
-  if (previewElement) {
-    previewElement.textContent = preview;
-  }
-  if (orgElement) {
-    orgElement.textContent = org;
-  }
+
   if (dateElement) {
     dateElement.textContent = p_date;
   }
 
-  item.removeAttribute('data-cloak');
+  if (imgElement) {
+    // imgElement.style.backgroundImage = `url(${pic_url})`;
+    imgElement.src = pic_url;
+  }
+  item.removeAttribute('data-cloak'); // 移除遮挡style
   return item;
 };
 
-const loadItems = async (page: number) => {
-  // console.log(page);
+/**
+ * 罗列并呈现items
+ * @param page 当前页
+ * @returns 异常返回
+ */
+const loadItems = async (key: string, page: number, glbToday: string, glbHistory: string) => {
+  curPageIndex = page;
+  if (page < 1) return;
+  // 获取item json数据
+  // const newsData: NewsData[] = await fetchData<NewsData>(
+  //   `http://localhost:5000/search?page=${page}&per_page=${perPage}`
+  // );
 
-  if (page < 1 || page > totPages) return;
-  const newsData = await fetchNewsDatabase(
-    `http://metro-info.edwardxwliu.cn:5000/search?page=${page}&per_page=${perPage}`
+  const todayNews: NewsData[] = await fetchData<NewsData>(
+    `http://localhost:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}&today=1`
   );
-  if (!newsData) {
+  const historyNews: NewsData[] = await fetchData<NewsData>(
+    `http://localhost:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}`
+  );
+
+  // 有异常或没有数据返回到根目录
+  if (!historyNews) {
     window.location.replace('/');
     return;
   }
 
-  const itemTemplate = document.querySelector<HTMLDivElement>('[data-element="news-item"]');
-  if (!itemTemplate) return;
+  // const todayNews = newsData.filter((data) => data.p_date === currentDate);
+  // const historyNews = newsData.filter((data) => data.p_date !== currentDate);
 
-  const itemList = itemTemplate.parentElement!;
-  // itemTemplate.remove();
+  const itemTemplateToday = document.querySelector<HTMLDivElement>(
+    `[data-element="${key}-item-today"]`
+  ); // 获取webflow模板
+  const itemTemplateHistory = document.querySelector<HTMLDivElement>(
+    `[data-element="${key}-item-history"]`
+  );
 
-  const newsItems = newsData.map((data) => createNewsItem(data, itemTemplate));
-  // console.log(oldItems);
-  if (oldItems) {
-    oldItems.map((child) => itemList.removeChild(child));
+  const itemMoreWrapperToday = document.querySelector<HTMLDivElement>(
+    `[data-element="${key}-more-today"]`
+  );
+  const itemMoreWrapperHistory = document.querySelector<HTMLDivElement>(
+    `[data-element="${key}-more-history"]`
+  );
+
+  if (
+    !itemTemplateToday ||
+    !itemTemplateHistory ||
+    !itemMoreWrapperToday ||
+    !itemMoreWrapperHistory
+  ) {
+    return;
   }
 
-  itemList.append(...newsItems);
-  oldItems = newsItems;
-  handleNavButtons(page);
-  currentPage = page;
-};
+  itemMoreWrapperToday.hidden = todayNews.length < 10 ? true : false;
+  // itemMoreWrapperHistory.hidden = historyNews.length < perPage ? true : false;
 
-function handleNavButtons(page: number) {
-  if (page + 4 > totPages) {
-    cleanPageIndex(page);
-    loadPageIndex(totPages - 9, totPages);
-  } else if (page > 6) {
-    cleanPageIndex(page);
-    loadPageIndex(page - 5, page + 4);
-  } else if (page <= 6) {
-    cleanPageIndex(page);
-    loadPageIndex(1, 10);
-  }
-  pageButActive(page);
-  if (page !== currentPage) {
-    pageButInactive(currentPage);
-  }
-  if (page === 1) {
-    pageButActive(0);
-  } else {
-    pageButInactive(0);
-  }
-  if (page === totPages) {
-    pageButActive(-1);
-  } else {
-    pageButInactive(-1);
-  }
-}
+  if (todayNews.length > 0) {
+    const itemListToday = itemTemplateToday.parentElement!;
+    const newsItemsToday = todayNews.map((data) => createNewsItem(key, data, itemTemplateToday));
 
-const pageButActive = (pageIndex: number) => {
-  const item = document.querySelector<HTMLButtonElement>(`[page-nav-index="${pageIndex}"]`);
-  // console.log(item?.textContent, pageIndex);
-  item?.classList.add('page-index_active');
-  if (item) item.disabled = true;
-};
+    const oldItemsToday: HTMLDivElement[] = globalState.getValue<HTMLDivElement[]>(glbToday);
 
-const pageButInactive = (pageIndex: number) => {
-  const item = document.querySelector<HTMLButtonElement>(`[page-nav-index="${pageIndex}"]`);
-  item?.classList.remove('page-index_active');
-  if (item) item.disabled = false;
-};
-
-const pageButRemove = (pageIndex: number) => {
-  const item = document.querySelector<HTMLButtonElement>(`[page-nav-index="${pageIndex}"]`);
-  item?.remove();
-};
-
-const cleanPageIndex = (page: number) => {
-  const pageIndexWrap = document.querySelector<HTMLDivElement>('[data-element="page-index-wrap"]');
-
-  if (!pageIndexWrap) return;
-  const st_i = pageIndexWrap.firstElementChild?.getAttribute('page-nav-index');
-  const ed_i = pageIndexWrap.lastElementChild?.getAttribute('page-nav-index');
-
-  if (st_i && ed_i) {
-    for (let i: number = +st_i; i <= +ed_i; i++) {
-      if (i !== page) pageButRemove(i);
+    if (oldItemsToday) {
+      oldItemsToday.map((child) => itemListToday.removeChild(child));
     }
+    itemListToday.append(...newsItemsToday);
+    // oldItemsToday = newsItemsToday;
+    globalState.setValue(glbToday, newsItemsToday);
   }
+
+  if (historyNews.length > 0) {
+    const itemListHistory = itemTemplateHistory.parentElement!; // 获取item模板父元素item list component
+    // itemTemplate.remove(); // 删除模板
+
+    const newsItemsHistory = historyNews.map((data) =>
+      createNewsItem(key, data, itemTemplateHistory)
+    ); // 使用模板初始化item数据
+
+    const oldItemsHistory: HTMLDivElement[] = globalState.getValue<HTMLDivElement[]>(glbHistory);
+    // 从itemList中清除历史数据
+    if (oldItemsHistory) {
+      oldItemsHistory.map((child) => itemListHistory.removeChild(child));
+    }
+
+    itemListHistory.append(...newsItemsHistory); // 给itemList追加新数据
+    // oldItemsHistory = newsItemsHistory; // 更新保存历史数据
+    globalState.setValue(glbHistory, newsItemsHistory);
+  }
+
+  oldPageIndex = page; // 更新历史导航index
 };

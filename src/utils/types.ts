@@ -2,12 +2,27 @@ export interface NewsData {
   pk: string;
   type: Type;
   title: string;
+  pic_url: string;
   url: string;
   content: string;
   org: string;
   p_date: string;
+  p_time: string;
   preview: string;
 }
+
+// export interface WechatNewsData {
+//   pk: string;
+//   type: Type;
+//   title: string;
+//   pic_url: string;
+//   url: string;
+//   content: string;
+//   org: string;
+//   p_date: string;
+//   p_time: string;
+//   preview: string;
+// }
 
 export enum Type {
   发展改革工作 = '发展改革工作',
