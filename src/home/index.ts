@@ -45,7 +45,7 @@ window.Webflow.push(() => {
 async function handleNews(key: string, glTotItems: string, glbToday: string, glbHistory: string) {
   // 获取数据总数量和总分页数，分页通过perPage计算。
   const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
-    `http://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
+    `https://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
   );
   globalState.setValue(glTotItems, item_stat[0].tot_items);
   loadItems(key, oldPageIndex, glbToday, glbHistory); // 加载item数组
@@ -59,7 +59,7 @@ async function updateNews(key: string, glTotItems: string, glbToday: string, glb
   if (curPageIndex === 1) {
     // 当用户在第1页时才触发更新，否则不触发
     const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
-      `http://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
+      `https://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
     );
     const newTotItems = item_stat[0].tot_items;
     const oldTotItems = globalState.getValue(glTotItems);
@@ -122,14 +122,14 @@ const loadItems = async (key: string, page: number, glbToday: string, glbHistory
   if (page < 1) return;
   // 获取item json数据
   // const newsData: NewsData[] = await fetchData<NewsData>(
-  //   `http://metro-info.edwardxwliu.cn:5000/search?page=${page}&per_page=${perPage}`
+  //   `https://metro-info.edwardxwliu.cn:5000/search?page=${page}&per_page=${perPage}`
   // );
 
   const todayNews: NewsData[] = await fetchData<NewsData>(
-    `http://metro-info.edwardxwliu.cn:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}&today=1`
+    `https://metro-info.edwardxwliu.cn:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}&today=1`
   );
   const historyNews: NewsData[] = await fetchData<NewsData>(
-    `http://metro-info.edwardxwliu.cn:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}`
+    `https://metro-info.edwardxwliu.cn:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}`
   );
 
   // 有异常或没有数据返回到根目录
