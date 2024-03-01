@@ -20,7 +20,7 @@ window.Webflow ||= [];
 window.Webflow.push(async () => {
   // 获取数据总数量和总分页数，分页通过perPage计算。
   const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
-    `https://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
+    `http://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
   );
   totPages = item_stat[0].tot_pages; // 更新总页数
   totItems = item_stat[0].tot_items;
@@ -36,7 +36,7 @@ async function updatePage() {
   if (curPageIndex === 1) {
     // 当用户在第1页时才触发更新，否则不触发
     const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
-      `https://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
+      `http://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
     );
     const newTotItems = item_stat[0].tot_items;
     if (newTotItems !== totItems) {
@@ -167,7 +167,7 @@ const loadItems = async (page: number) => {
   if (page < 1 || page > totPages) return;
   // 获取item json数据
   const newsData: NewsData[] = await fetchData<NewsData>(
-    `https://metro-info.edwardxwliu.cn:5000/search?key=${key}&page=${page}&per_page=${perPage}`
+    `http://metro-info.edwardxwliu.cn:5000/search?key=${key}&page=${page}&per_page=${perPage}`
   );
   // 有异常或没有数据返回到根目录
   if (!newsData) {
