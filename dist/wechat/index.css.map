@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["../../src/wechat/index.css"],
-  "sourcesContent": [".item_title{\r\n    text-overflow: ellipsis;\r\n}\r\n.item_fontlan{\r\n    text-overflow: ellipsis;\r\n    \r\n}\r\n.news-item_txt{\r\n    text-overflow: ellipsis;\r\n    display: -webkit-box;\r\n    -webkit-box-orient: vertical;\r\n    -webkit-line-clamp: 3\r\n}\r\n.page-index_active{\r\n    background-color: #154977!important;\r\n    color: #fff;\r\n}"],
+  "sourcesContent": [".item_title{\r\n    text-overflow: ellipsis;\r\n}\r\n.item_fontlan{\r\n    text-overflow: ellipsis;\r\n    \r\n}\r\n.news-item_txt{\r\n    text-overflow: ellipsis;\r\n    display: -webkit-box;\r\n    -webkit-box-orient: vertical;\r\n    -webkit-line-clamp: 3\r\n}\r\n.page-index_active{\r\n    background-color: #6c72ff!important;\r\n    color: #fff;\r\n}"],
   "mappings": ";AAAA,CAAC;AACG,iBAAe;AACnB;AACA,CAAC;AACG,iBAAe;AAEnB;AACA,CAAC;AACG,iBAAe;AACf,WAAS;AACT,sBAAoB;AACpB,sBAAoB;AACxB;AACA,CAAC;AACG,oBAAkB;AAClB,SAAO;AACX;",
   "names": []
 }
