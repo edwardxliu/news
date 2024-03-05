@@ -1,0 +1,17 @@
+.item_title{
+    text-overflow: ellipsis;
+}
+.item_fontlan{
+    text-overflow: ellipsis;
+    
+}
+.news-item_txt{
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3
+}
+.page-index_active{
+    background-color: #6c72ff!important;
+    color: #fff;
+}

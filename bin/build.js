@@ -12,6 +12,7 @@ const ENTRY_POINTS = [
   'src/news-db-template/index.ts',
   'src/fgw/index.ts',
   'src/wechat/index.ts',
+  'src/gzdt/index.ts',
 ];
 
 // Config dev serving

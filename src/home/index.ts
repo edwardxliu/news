@@ -30,16 +30,20 @@ class GlobalState {
 const globalState = new GlobalState({
   fgwTotItems: 0,
   wechatTotItems: 0,
+  gzdtTotItems: 0,
   fgwOldItemsHistory: [], // 历史item数组
   fgwOldItemsToday: [],
   wechatOldItemsHistory: [],
   wechatOldItemsToday: [],
+  gzdtOldItemsHistory: [],
+  gzdtOldItemsToday: [],
 });
 
 window.Webflow ||= [];
 window.Webflow.push(() => {
   handleNews('fgw', 'fgwTotItems', 'fgwOldItemsToday', 'fgwOldItemsHistory');
   handleNews('wechat', 'wechatTotItems', 'wechatOldItemsToday', 'wechatOldItemsHistory');
+  handleNews('gzdt', 'gzdtTotItems', 'gzdtOldItemsToday', 'gzdtOldItemsHistory');
 });
 
 async function handleNews(key: string, glTotItems: string, glbToday: string, glbHistory: string) {
