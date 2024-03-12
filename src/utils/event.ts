@@ -17,6 +17,6 @@ export function directToSearch() {
     event.preventDefault();
     if (!searchInputSide) return;
     const inputVal = searchInputSide.value;
-    window.location.href = `/search?query=${encodeURIComponent(inputVal)}`;
+    window.location.href = `/search.html?query=${encodeURIComponent(inputVal)}`;
   });
 }

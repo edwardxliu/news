@@ -38,14 +38,14 @@ window.Webflow.push(async () => {
     const inputVal = searchInput.value;
     // loadItems(searchInput.value);
     // directToSearch();
-    window.location.href = `/search?query=${encodeURIComponent(inputVal)}`;
+    window.location.href = `/search.html?query=${encodeURIComponent(inputVal)}`;
   });
 
   searchFormSide?.addEventListener('submit', (event) => {
     event.preventDefault();
     if (!searchInputSide) return;
     const inputVal = searchInputSide.value;
-    window.location.href = `/search?query=${encodeURIComponent(inputVal)}`;
+    window.location.href = `/search.html?query=${encodeURIComponent(inputVal)}`;
   });
   // const item = cloneNode(url);
   // search_container?.append(item);
