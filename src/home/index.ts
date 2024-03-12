@@ -3,6 +3,7 @@ import './index.css';
 import { cloneNode } from '@finsweet/ts-utils';
 
 import { fetchData, getCurrentDate } from '$utils/api';
+import { directToSearch } from '$utils/event';
 import type { NewsData, NewsDataStat } from '$utils/types';
 
 let oldPageIndex: number = 1; // 导航栏历史index
@@ -41,6 +42,8 @@ const globalState = new GlobalState({
 
 window.Webflow ||= [];
 window.Webflow.push(() => {
+  directToSearch();
+
   handleNews('fgw', 'fgwTotItems', 'fgwOldItemsToday', 'fgwOldItemsHistory');
   handleNews('wechat', 'wechatTotItems', 'wechatOldItemsToday', 'wechatOldItemsHistory');
   handleNews('gzdt', 'gzdtTotItems', 'gzdtOldItemsToday', 'gzdtOldItemsHistory');

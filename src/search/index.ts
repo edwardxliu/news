@@ -4,15 +4,49 @@ import { cloneNode } from '@finsweet/ts-utils';
 
 import { fetchData } from '$utils/api';
 import type { NewsData } from '$utils/types';
+let oldItems: HTMLLinkElement[] = []; // 历史item数组
 
 window.Webflow ||= [];
 window.Webflow.push(async () => {
   // 获取search input值
-  const searchInput = document.querySelector<HTMLInputElement>('[data-element="search-input"]');
-  if (!searchInput) return;
-  // console.log(searchInput.value);
+  const urlParams = new URLSearchParams(window.location.search);
+  const inputVal = urlParams.get('query');
 
-  loadItems(searchInput.value);
+  const searchInput = document.querySelector<HTMLInputElement>('[data-element="search-input"]');
+
+  const searchForm = document.querySelector<HTMLFormElement>('[data-element="search-form"]');
+
+  const searchInputSide = document.querySelector<HTMLInputElement>(
+    '[data-element="search-input-side"]'
+  );
+  const searchFormSide = document.querySelector<HTMLFormElement>(
+    '[data-element="search-form-side"]'
+  );
+
+  if (!searchInput) return;
+  if (!searchInputSide) return;
+  if (!searchForm) return;
+  if (!searchFormSide) return;
+  if (inputVal) {
+    searchInput.value = inputVal;
+    searchInputSide.value = inputVal;
+    loadItems(searchInput.value);
+  }
+
+  searchForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const inputVal = searchInput.value;
+    // loadItems(searchInput.value);
+    // directToSearch();
+    window.location.href = `/search?query=${encodeURIComponent(inputVal)}`;
+  });
+
+  searchFormSide?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    if (!searchInputSide) return;
+    const inputVal = searchInputSide.value;
+    window.location.href = `/search?query=${encodeURIComponent(inputVal)}`;
+  });
   // const item = cloneNode(url);
   // search_container?.append(item);
 
@@ -83,6 +117,10 @@ const loadItems = async (searchInput: string) => {
 
   const newsItems = newsData.map((data) => createNewsItem(data, itemTemplate)); // 使用模板初始化item数据
 
+  if (oldItems) {
+    oldItems.map((child) => itemList.removeChild(child));
+  }
+
   itemTemplate.remove(); // 删除模板
   const secondItemTemplate = document.querySelector<HTMLLinkElement>(
     '[data-element="search-link"]'
@@ -90,4 +128,5 @@ const loadItems = async (searchInput: string) => {
   if (secondItemTemplate) secondItemTemplate.remove(); // 删除模板
 
   itemList.append(...newsItems); // 给itemList追加新数据
+  oldItems = newsItems; // 更新保存历史数据
 };

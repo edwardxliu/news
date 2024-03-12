@@ -3,7 +3,7 @@ import './index.css';
 import { cloneNode } from '@finsweet/ts-utils';
 
 import { fetchData } from '$utils/api';
-import { scrollToTop } from '$utils/event';
+import { directToSearch, scrollToTop } from '$utils/event';
 import type { NewsData, NewsDataStat } from '$utils/types';
 
 let oldPageIndex: number = 1; // 导航栏历史index
@@ -19,6 +19,7 @@ const key: string = 'fgw';
 
 window.Webflow ||= [];
 window.Webflow.push(async () => {
+  directToSearch();
   // 获取数据总数量和总分页数，分页通过perPage计算。
   const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
     `http://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
