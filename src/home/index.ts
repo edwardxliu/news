@@ -44,6 +44,10 @@ window.Webflow.push(() => {
   handleNews('fgw', 'fgwTotItems', 'fgwOldItemsToday', 'fgwOldItemsHistory');
   handleNews('wechat', 'wechatTotItems', 'wechatOldItemsToday', 'wechatOldItemsHistory');
   handleNews('gzdt', 'gzdtTotItems', 'gzdtOldItemsToday', 'gzdtOldItemsHistory');
+
+  const searchInput = document.querySelector<HTMLInputElement>('[data-element="search-input"]');
+  const searchButton = document.querySelector<HTMLButtonElement>('[data-element="search-button"]');
+  console.log(searchInput, searchButton);
 });
 
 async function handleNews(key: string, glTotItems: string, glbToday: string, glbHistory: string) {

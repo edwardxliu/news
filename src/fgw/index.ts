@@ -3,6 +3,7 @@ import './index.css';
 import { cloneNode } from '@finsweet/ts-utils';
 
 import { fetchData } from '$utils/api';
+import { scrollToTop } from '$utils/event';
 import type { NewsData, NewsDataStat } from '$utils/types';
 
 let oldPageIndex: number = 1; // 导航栏历史index
@@ -60,11 +61,13 @@ function initBeforeNextButtons() {
   if (nextButton) {
     nextButton.addEventListener('click', () => {
       loadItems(oldPageIndex + 1);
+      scrollToTop();
     });
   }
   if (previousButton) {
     previousButton.addEventListener('click', () => {
       loadItems(oldPageIndex - 1);
+      scrollToTop();
     });
   }
 }
@@ -91,6 +94,7 @@ const createPageIndex = (index: number, itemTemplate: HTMLButtonElement) => {
         // 防止触发再次点击
         if (!item.disabled) {
           loadItems(index); // 加载数据页
+          scrollToTop();
         }
       }, 500);
     }
@@ -143,7 +147,7 @@ const createNewsItem = (
     titleElement.href = url;
   }
   if (previewElement) {
-    previewElement.textContent = preview;
+    previewElement.innerHTML = preview;
   }
   if (orgElement) {
     orgElement.textContent = org;

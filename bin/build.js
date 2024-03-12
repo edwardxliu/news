@@ -13,6 +13,7 @@ const ENTRY_POINTS = [
   'src/fgw/index.ts',
   'src/wechat/index.ts',
   'src/gzdt/index.ts',
+  'src/search/index.ts',
 ];
 
 // Config dev serving
