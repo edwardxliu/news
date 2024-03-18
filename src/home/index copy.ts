@@ -1,8 +1,9 @@
 import './index.css';
 
+import { cloneNode } from '@finsweet/ts-utils';
+
 import { fetchData, getCurrentDate } from '$utils/api';
 import { directToSearch } from '$utils/event';
-import { createNewsItem } from '$utils/newsItemComponent';
 import type { NewsData, NewsDataStat } from '$utils/types';
 
 let oldPageIndex: number = 1; // 导航栏历史index
@@ -55,7 +56,7 @@ window.Webflow.push(() => {
 async function handleNews(key: string, glTotItems: string, glbToday: string, glbHistory: string) {
   // 获取数据总数量和总分页数，分页通过perPage计算。
   const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
-    `http://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
+    `http://localhost:5000/stat?key=${key}&per_page=${perPage}`
   );
   globalState.setValue(glTotItems, item_stat[0].tot_items);
   loadItems(key, oldPageIndex, glbToday, glbHistory); // 加载item数组
@@ -69,7 +70,7 @@ async function updateNews(key: string, glTotItems: string, glbToday: string, glb
   if (curPageIndex === 1) {
     // 当用户在第1页时才触发更新，否则不触发
     const item_stat: NewsDataStat[] = await fetchData<NewsDataStat>(
-      `http://metro-info.edwardxwliu.cn:5000/stat?key=${key}&per_page=${perPage}`
+      `http://localhost:5000/stat?key=${key}&per_page=${perPage}`
     );
     const newTotItems = item_stat[0].tot_items;
     const oldTotItems = globalState.getValue(glTotItems);
@@ -82,6 +83,65 @@ async function updateNews(key: string, glTotItems: string, glbToday: string, glb
 }
 
 /**
+ * 创建消息item
+ * @param param0 一个{@link newsData}对象
+ * @param itemTemplate webflow模板
+ * @returns 一个{@link HTMLDivElement}对象
+ */
+const createNewsItem = (
+  key: string,
+  { type, title, pic_url, url, p_date, org, preview, content }: NewsData,
+  itemTemplate: HTMLLinkElement
+) => {
+  const item = cloneNode(itemTemplate);
+  // console.log(itemTemplate, pic_url);
+  // const typeElement = item.querySelector<HTMLDivElement>(`[data-element="${key}-type"]`);
+  const typeElement = item.querySelector<HTMLDivElement>(`[data-element="news-type"]`);
+  const titleElement = item.querySelector<HTMLLinkElement>(`[data-element="news-title"]`);
+  const previewElement = item.querySelector<HTMLDivElement>('[data-element="news-preview');
+  // const orgElement = item.querySelector<HTMLDivElement>('[data-element="news-org"]');
+  const dateElement = item.querySelector<HTMLDivElement>(`[data-element="news-date"]`);
+  // const imgElement = item.querySelector<HTMLDivElement>(`[data-element="${key}-img-preview"]`);
+  const imgElement = item.querySelector<HTMLImageElement>(`[data-element="news-img-preview"]`);
+  // 赋值
+  item.href = url;
+  if (typeElement) {
+    typeElement.textContent = type ? type : org;
+  }
+  if (titleElement) {
+    titleElement.textContent = title;
+    // titleElement.href = url;
+  }
+  if (previewElement) {
+    if (!preview && !content) {
+      content = title;
+    }
+    previewElement.textContent = preview ? preview : content.slice(0, 200);
+  }
+
+  if (dateElement) {
+    dateElement.textContent = p_date;
+  }
+
+  if (imgElement) {
+    // imgElement.style.backgroundImage = `url(${pic_url})`;
+    switch (key) {
+      case 'gzdt':
+        imgElement.src = pic_url ? pic_url : 'http://qn.edwardxwliu.cn/%E7%88%AC%E8%99%AB/gzdt.jpg';
+        break;
+      case 'fgw':
+        imgElement.src = pic_url ? pic_url : 'http://qn.edwardxwliu.cn/%E7%88%AC%E8%99%AB/fgw.jpg';
+        break;
+      default:
+        imgElement.src = pic_url;
+        break;
+    }
+  }
+  item.removeAttribute('data-cloak'); // 移除遮挡style
+  return item;
+};
+
+/**
  * 罗列并呈现items
  * @param page 当前页
  * @returns 异常返回
@@ -91,10 +151,10 @@ const loadItems = async (key: string, page: number, glbToday: string, glbHistory
   if (page < 1) return;
   // 获取item json数据
   const todayNews: NewsData[] = await fetchData<NewsData>(
-    `http://metro-info.edwardxwliu.cn:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}&today=1`
+    `http://localhost:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}&today=1`
   );
   const historyNews: NewsData[] = await fetchData<NewsData>(
-    `http://metro-info.edwardxwliu.cn:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}`
+    `http://localhost:5000/search?key=${key}&page=${page}&per_page=${perPage}&date=${currentDate}`
   );
 
   // 有异常或没有数据返回到根目录
