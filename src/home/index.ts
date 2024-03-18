@@ -113,8 +113,8 @@ const loadItems = async (key: string, page: number, glbToday: string, glbHistory
   if (!(itemListHistory && itemListToday)) return;
 
   // 获取webflow模板
-  const itemTemplateToday = itemListToday.firstChild as HTMLLinkElement;
-  const itemTemplateHistory = itemListHistory.firstChild as HTMLLinkElement;
+  const itemTemplateToday = itemListToday.firstElementChild as HTMLLinkElement;
+  const itemTemplateHistory = itemListHistory.firstElementChild as HTMLLinkElement;
   const itemMoreWrapperToday = document.querySelector<HTMLDivElement>(
     `[data-element="${key}-more-today"]`
   );
